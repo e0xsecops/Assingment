@@ -3,150 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JobQuest Dashboard</title>
+    <title>Job Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .tab-active { border-bottom: 3px solid #4F46E5; color: #4F46E5; font-weight: bold; }
-    </style>
 </head>
-<body class="bg-gray-50 font-sans">
+<body class="bg-gray-100 font-sans">
 
-    <header class="bg-white border-b border-gray-200 py-4 px-6 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-indigo-600 tracking-tight">JobQuest</h1>
-            <div class="flex gap-4 sm:gap-8">
-                <div class="text-center">
-                    <p class="text-xs text-gray-500 uppercase">Interviewing</p>
-                    <p id="count-interview" class="text-xl font-bold text-blue-600">0</p>
-                </div>
-                <div class="text-center border-l pl-4 sm:pl-8">
-                    <p class="text-xs text-gray-500 uppercase">Rejected</p>
-                    <p id="count-rejected" class="text-xl font-bold text-red-600">0</p>
-                </div>
+    <!-- Dashboard -->
+    <header class="p-6 bg-white shadow-md flex justify-between items-center">
+        <h1 class="text-2xl font-bold">Job Portal Dashboard</h1>
+        <div class="flex space-x-4">
+            <div class="p-4 bg-blue-100 rounded shadow text-center">
+                <p>Total Jobs</p>
+                <p id="totalCount" class="font-bold text-xl">8</p>
+            </div>
+            <div class="p-4 bg-green-100 rounded shadow text-center">
+                <p>Interview</p>
+                <p id="interviewCount" class="font-bold text-xl">0</p>
+            </div>
+            <div class="p-4 bg-red-100 rounded shadow text-center">
+                <p>Rejected</p>
+                <p id="rejectedCount" class="font-bold text-xl">0</p>
             </div>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto p-4 sm:p-6">
-        
-        <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-            <h2 class="text-3xl font-bold text-gray-800">Available Jobs</h2>
-            <div class="bg-indigo-100 text-indigo-700 px-4 py-1 rounded-full font-semibold">
-                Showing <span id="total-jobs-count">0</span> Jobs
-            </div>
+    <!-- Jobs Section -->
+    <main class="p-6">
+        <!-- Section Header -->
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold">Available Jobs</h2>
+            <p id="jobsCount" class="text-gray-700 font-medium">8 Jobs</p>
         </div>
 
-        <div class="flex border-b border-gray-200 mb-8 overflow-x-auto">
-            <button onclick="switchTab('all')" id="tab-all" class="tab-active px-6 py-3 whitespace-nowrap">All Jobs</button>
-            <button onclick="switchTab('interview')" id="tab-interview" class="px-6 py-3 text-gray-500 whitespace-nowrap">Interviewing</button>
-            <button onclick="switchTab('rejected')" id="tab-rejected" class="px-6 py-3 text-gray-500 whitespace-nowrap">Rejected</button>
+        <!-- Tabs -->
+        <div class="flex space-x-4 mb-6">
+            <button class="tab-btn bg-blue-200 px-4 py-2 rounded" data-tab="all">All</button>
+            <button class="tab-btn bg-gray-200 px-4 py-2 rounded" data-tab="interview">Interview</button>
+            <button class="tab-btn bg-gray-200 px-4 py-2 rounded" data-tab="rejected">Rejected</button>
         </div>
 
-        <div id="jobs-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            </div>
-
-        <div id="empty-state" class="hidden flex-col items-center justify-center py-20 text-center">
-            <div class="bg-gray-100 p-6 rounded-full mb-4">
-                <i class="fa-solid fa-briefcase text-4xl text-gray-400"></i>
-            </div>
-            <h3 class="text-xl font-bold text-gray-700">No Jobs Available</h3>
-            <p class="text-gray-500">Check back later or change your filters.</p>
-        </div>
+        <!-- Jobs Container -->
+        <div id="jobsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
     </main>
 
     <script>
-        // --- Data ---
-        let jobs = [
-            { id: 1, companyName: "TechFlow", position: "Frontend Developer", location: "Remote", type: "Full-time", salary: "$80k - $100k", description: "Build modern UIs using React and Tailwind CSS.", status: "all" },
-            { id: 2, companyName: "CloudNet", position: "Backend Engineer", location: "New York", type: "Contract", salary: "$60/hr", description: "Scale high-traffic Node.js microservices.", status: "all" },
-            { id: 3, companyName: "DesignHub", position: "UI/UX Designer", location: "London", type: "Full-time", salary: "£45k - £55k", description: "Create user-centric designs for mobile apps.", status: "all" },
-            { id: 4, companyName: "SecureIT", position: "Cybersecurity Analyst", location: "Austin", type: "Full-time", salary: "$110k", description: "Protect digital infrastructure from threats.", status: "all" },
-            { id: 5, companyName: "DataGen", position: "Data Scientist", location: "Remote", type: "Full-time", salary: "$120k", description: "Analyze complex datasets to drive business growth.", status: "all" },
-            { id: 6, companyName: "MarketGo", position: "Marketing Specialist", location: "Berlin", type: "Part-time", salary: "€30k", description: "Lead digital marketing campaigns and SEO.", status: "all" },
-            { id: 7, companyName: "DevOps Pro", position: "DevOps Engineer", location: "San Francisco", type: "Full-time", salary: "$140k", description: "Optimize CI/CD pipelines and AWS cloud setups.", status: "all" },
-            { id: 8, companyName: "BuildIt", position: "Full Stack Developer", location: "Toronto", type: "Full-time", salary: "$95k", description: "Manage both client-side and server-side logic.", status: "all" }
+        // Sample Jobs Data
+        const jobs = [
+            {
+                id: 1, companyName: "Google", position: "Frontend Developer", location: "California", type: "Full-time", salary: "$120k", description: "Build amazing UIs", status: "all"
+            },
+            {
+                id: 2, companyName: "Facebook", position: "Backend Developer", location: "New York", type: "Full-time", salary: "$110k", description: "Handle server logic", status: "all"
+            },
+            {
+                id: 3, companyName: "Apple", position: "iOS Developer", location: "California", type: "Full-time", salary: "$130k", description: "Develop iOS apps", status: "all"
+            },
+            {
+                id: 4, companyName: "Amazon", position: "DevOps Engineer", location: "Seattle", type: "Full-time", salary: "$125k", description: "Manage cloud infrastructure", status: "all"
+            },
+            {
+                id: 5, companyName: "Netflix", position: "UI Designer", location: "Los Angeles", type: "Full-time", salary: "$100k", description: "Design intuitive UIs", status: "all"
+            },
+            {
+                id: 6, companyName: "Tesla", position: "AI Engineer", location: "California", type: "Full-time", salary: "$140k", description: "Work on autonomous driving AI", status: "all"
+            },
+            {
+                id: 7, companyName: "Microsoft", position: "Software Tester", location: "Washington", type: "Full-time", salary: "$90k", description: "Test software products", status: "all"
+            },
+            {
+                id: 8, companyName: "Airbnb", position: "Fullstack Developer", location: "San Francisco", type: "Full-time", salary: "$115k", description: "Build web applications", status: "all"
+            },
         ];
 
-        let currentTab = 'all';
+        const jobsContainer = document.getElementById("jobsContainer");
+        const totalCount = document.getElementById("totalCount");
+        const interviewCount = document.getElementById("interviewCount");
+        const rejectedCount = document.getElementById("rejectedCount");
+        const jobsCount = document.getElementById("jobsCount");
 
-        // --- Core Functions ---
-        function render() {
-            const container = document.getElementById('jobs-container');
-            const emptyState = document.getElementById('empty-state');
-            const totalCount = document.getElementById('total-jobs-count');
-            
-            // Filter Data
-            const filtered = jobs.filter(job => currentTab === 'all' ? true : job.status === currentTab);
-            totalCount.innerText = filtered.length;
+        let currentTab = "all";
 
-            // Handle Empty State
-            if (filtered.length === 0) {
-                container.innerHTML = "";
-                emptyState.classList.remove('hidden');
-                emptyState.classList.add('flex');
-            } else {
-                emptyState.classList.add('hidden');
-                emptyState.classList.remove('flex');
-                
-                container.innerHTML = filtered.map(job => `
-                    <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow relative">
-                        <button onclick="deleteJob(${job.id})" class="absolute top-3 right-3 text-gray-400 hover:text-red-500">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                        <h4 class="text-sm font-semibold text-indigo-600 mb-1">${job.companyName}</h4>
-                        <h3 class="text-lg font-bold text-gray-800 leading-tight">${job.position}</h3>
-                        <div class="flex gap-2 my-2 text-xs font-medium">
-                            <span class="bg-gray-100 px-2 py-1 rounded">${job.location}</span>
-                            <span class="bg-blue-50 text-blue-600 px-2 py-1 rounded">${job.type}</span>
-                        </div>
-                        <p class="text-gray-600 text-sm mb-4 line-clamp-2">${job.description}</p>
-                        <p class="font-bold text-gray-800 mb-4">${job.salary}</p>
-                        
-                        <div class="grid grid-cols-2 gap-2">
-                            <button onclick="updateStatus(${job.id}, 'interview')" class="py-2 rounded-lg text-sm font-bold border transition ${job.status === 'interview' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-blue-600 border-blue-600 hover:bg-blue-50'}">
-                                Interview
-                            </button>
-                            <button onclick="updateStatus(${job.id}, 'rejected')" class="py-2 rounded-lg text-sm font-bold border transition ${job.status === 'rejected' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-red-600 border-red-600 hover:bg-red-50'}">
-                                Rejected
-                            </button>
-                        </div>
+        function renderJobs() {
+            jobsContainer.innerHTML = "";
+
+            const filteredJobs = currentTab === "all" ? jobs : jobs.filter(job => job.status === currentTab);
+
+            if (filteredJobs.length === 0) {
+                jobsContainer.innerHTML = `
+                    <div class="text-center col-span-full">
+                        <img src="https://via.placeholder.com/100" alt="No jobs" class="mx-auto mb-2">
+                        <p class="font-bold text-lg">No Jobs Available</p>
+                        <p class="text-gray-500">Check back later or update filters</p>
                     </div>
-                `).join('');
+                `;
+                return;
             }
-            updateDashboard();
-        }
 
-        function updateStatus(id, newStatus) {
-            const job = jobs.find(j => j.id === id);
-            // Toggle logic: If clicking the same status, revert to 'all' (optional) or just switch
-            job.status = newStatus;
-            render();
-        }
+            filteredJobs.forEach(job => {
+                const card = document.createElement("div");
+                card.className = "p-4 bg-white rounded shadow";
 
-        function deleteJob(id) {
-            jobs = jobs.filter(j => j.id !== id);
-            render();
-        }
+                card.innerHTML = `
+                    <h3 class="font-bold text-lg mb-1">${job.position}</h3>
+                    <p class="text-gray-600 mb-1">${job.companyName} - ${job.location}</p>
+                    <p class="text-gray-500 mb-1">${job.type} | ${job.salary}</p>
+                    <p class="text-gray-700 mb-2">${job.description}</p>
+                    <div class="flex space-x-2">
+                        <button class="interview-btn bg-green-400 text-white px-3 py-1 rounded">${job.status === "interview" ? "Interview ✅" : "Interview"}</button>
+                        <button class="rejected-btn bg-red-400 text-white px-3 py-1 rounded">${job.status === "rejected" ? "Rejected ❌" : "Rejected"}</button>
+                        <button class="delete-btn bg-gray-400 text-white px-3 py-1 rounded">Delete</button>
+                    </div>
+                `;
 
-        function updateDashboard() {
-            document.getElementById('count-interview').innerText = jobs.filter(j => j.status === 'interview').length;
-            document.getElementById('count-rejected').innerText = jobs.filter(j => j.status === 'rejected').length;
-        }
+                // Event Listeners
+                card.querySelector(".interview-btn").addEventListener("click", () => {
+                    job.status = "interview";
+                    updateCounts();
+                    renderJobs();
+                });
 
-        function switchTab(tab) {
-            currentTab = tab;
-            document.querySelectorAll('button[id^="tab-"]').forEach(btn => {
-                btn.classList.remove('tab-active');
-                btn.classList.add('text-gray-500');
+                card.querySelector(".rejected-btn").addEventListener("click", () => {
+                    job.status = "rejected";
+                    updateCounts();
+                    renderJobs();
+                });
+
+                card.querySelector(".delete-btn").addEventListener("click", () => {
+                    const index = jobs.findIndex(j => j.id === job.id);
+                    if (index > -1) jobs.splice(index, 1);
+                    updateCounts();
+                    renderJobs();
+                });
+
+                jobsContainer.appendChild(card);
             });
-            document.getElementById(`tab-${tab}`).classList.add('tab-active');
-            document.getElementById(`tab-${tab}`).classList.remove('text-gray-500');
-            render();
         }
 
-        // Initial Load
-        render();
+        function updateCounts() {
+            totalCount.textContent = jobs.length;
+            interviewCount.textContent = jobs.filter(j => j.status === "interview").length;
+            rejectedCount.textContent = jobs.filter(j => j.status === "rejected").length;
+            jobsCount.textContent = `${jobs.length} Jobs`;
+        }
+
+        // Tab Switching
+        document.querySelectorAll(".tab-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                currentTab = btn.dataset.tab;
+                document.querySelectorAll(".tab-btn").forEach(b => b.classList.replace("bg-blue-200", "bg-gray-200"));
+                btn.classList.replace("bg-gray-200", "bg-blue-200");
+                renderJobs();
+            });
+        });
+
+        // Initial render
+        renderJobs();
+        updateCounts();
     </script>
+
 </body>
 </html>
